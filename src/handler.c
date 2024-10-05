@@ -186,7 +186,7 @@ void *Receive_handler(void *args)
         {
             printf("***Message receive from: %s\n", rev_thr->my_ip);  // Sender's IP
             printf("***Sender Port:          %d\n", rev_thr->port_num); // Sender's Port
-            printf("***Message:              %s\n", buff_rev); // content message
+            printf("-->Message:              %s\n", buff_rev); // content message
         }
         else
         {

@@ -13,6 +13,10 @@ pthread_t Accept_thr_id, Receive_thr_id;
 char command[100];          // String to store user input
 char command_option[10];   // String to store command line option
 
+void clear_input_buffer() {
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);
+}
 
 int main(int argc, char const *argv[])
 {
@@ -182,8 +186,10 @@ int main(int argc, char const *argv[])
                 printf("INVALID command.\n");
                 break;
         }
-
     }
+
+    printf("\nPress Enter to continue...");
+    clear_input_buffer(); 
 
     return 0;
 }
