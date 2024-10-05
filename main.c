@@ -77,6 +77,8 @@ int main(int argc, char const *argv[])
                 break;
 
             case 2: // myip
+                /* Display the ip of the current device */
+                print_myIP(this_device.my_ip);
                 break;
 
             case 3: // myport
@@ -92,11 +94,12 @@ int main(int argc, char const *argv[])
                     
                     // Set up information for the device to connect
                     device_connect_to[total_device_to].fd = socket(AF_INET, SOCK_STREAM, 0);
+                    device_connect_to[total_device_to].id = total_device_to;
                     device_connect_to[total_device_to].port_num = port_n;
                     strcpy(device_connect_to[total_device_to].my_ip, IP_d);
                     device_connect_to[total_device_to].addr.sin_family = AF_INET;
-                    device_connect_to[total_device_to].addr.sin_port = htons(port_n);
-                    inet_pton(AF_INET, IP_d, &device_connect_to[total_device_to].addr.sin_addr.s_addr);
+                    device_connect_to[total_device_to].addr.sin_port = htons(device_connect_to[total_device_to].port_num);
+                    inet_pton(AF_INET, device_connect_to[total_device_to].my_ip, &device_connect_to[total_device_to].addr.sin_addr.s_addr);
 
                     if(connect_to(device_connect_to[total_device_to]) == 0)
                     {
@@ -119,12 +122,30 @@ int main(int argc, char const *argv[])
                 /* Process the message sending command */
                 {
                     char message[100];
-                    sscanf(command, "%*s %[^\n]", message);
-
-                    if (total_device_to > 0)
-                    {
-                        send_to(device_connect_to[0], message);
+                    int id;
+                    // Ensure valid input format
+                    if (sscanf(command, "%*s %d %[^\n]", &id, message) < 2) {
+                        printf("ERROR: Invalid input. Usage: send <id> <message>\n");
+                        break;
                     }
+
+                    // Send message to device with corresponding ID
+                    int found = 0;
+                    for (int i = 0; i < total_device_to; i++) {
+                        if (id == device_connect_to[i].id) {
+                            if (send_to(device_connect_to[i], message) == 0) {
+                                printf("ERROR: Failed to send message to device %d.\n", id);
+                            }
+                            found = 1;
+                            break;
+                        }
+                    }
+
+                    // Inform user if device ID is not found
+                    if (!found) {
+                        printf("ERROR: Device with ID %d not found.\n", id);
+                    }
+                            
                     break;
                 }
 

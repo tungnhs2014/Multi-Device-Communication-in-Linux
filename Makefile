@@ -1,44 +1,64 @@
 # Compiler and flags
-CC = gcc
-CFLAGS = -Wall -pthread -Iinc  # -Iinc để chỉ định thư mục chứa header files
+CC := gcc
+CFLAGS := -Wall -pthread -Iinc
+PIC_FLAG := -fPIC
 
 # Directories
-BIN_DIR = bin
-OBJ_DIR = obj
-SRC_DIR = src
-INC_DIR = inc
+OBJ_DIR := obj
+SRC_DIR := src
+LIB_DIR := lib
+BIN_DIR := bin
 
 # Output executable name
-TARGET = $(BIN_DIR)/multi_device
+TARGET := $(BIN_DIR)/multi_device
 
-# Source files
-SRC = main.c $(SRC_DIR)/handler.c
+# Automatically detect all .c files
+SRC := main.c $(wildcard $(SRC_DIR)/*.c)
+OBJ := $(patsubst %.c,$(OBJ_DIR)/%.o,$(notdir $(SRC)))
 
-# Object files
-OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/handler.o
+# Libraries
+STATIC_LIB = $(LIB_DIR)/static/libhandler.a
+SHARED_LIB = $(LIB_DIR)/shared/libhandler.so
 
-# Default rule to build the executable
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
+# Build the executable using static library
+static: $(TARGET)
 
-# Compile .c files into .o files
-$(OBJ_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+# Build the executable using shared library
+shared: $(OBJ) $(SHARED_LIB)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) -L$(LIB_DIR)/shared -lhandler
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+# Compile .c to .o files with Position Independent Code for shared library
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(PIC_FLAG) -c $< -o $@
 
-# Run server
-run: $(TARGET)
-	./$(TARGET) 8080
+# Create static library
+$(STATIC_LIB): $(OBJ)
+	ar rcs $(STATIC_LIB) $(OBJ)
 
-# Run client
-run_client: $(TARGET)
-	./$(TARGET) 9090
+# Create shared library
+$(SHARED_LIB): $(OBJ)
+	$(CC) -shared -o $(SHARED_LIB) $(OBJ)
 
-# Clean object files and executable
+# Link static executable
+$(TARGET): $(OBJ) $(STATIC_LIB) | $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(STATIC_LIB)
+
+# Create directories if they don't exist
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(LIB_DIR)/shared:
+	mkdir -p $(LIB_DIR)/shared
+
+$(LIB_DIR)/static:
+	mkdir -p $(LIB_DIR)/static
+
+# Clean up
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(TARGET) $(STATIC_LIB) $(SHARED_LIB)
 
 # Phony targets
-.PHONY: run run_client clean
+.PHONY: static shared clean

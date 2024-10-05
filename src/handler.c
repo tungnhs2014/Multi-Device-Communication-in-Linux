@@ -89,17 +89,37 @@ int connect_to(device dev)
     return connect(dev.fd, (struct sockaddr*)&dev.addr, sizeof(dev.addr));
 }
 
+void print_myIP(char *ip_add)
+{
+    // Open stream to get device IP address via 'hostname -I' command
+    FILE *fd = popen("hostname -I", "r");
+    
+    if (fd == NULL)
+    {
+        printf("ERROR: Can not get IP address\n");
+        return;
+    }
+
+    if (fgets(ip_add, 100, fd) == NULL)
+    {
+        printf("ERROR: Can not get IP address\n");
+        return;
+    }
+
+    printf("My IP is : %s", ip_add); 
+}
+
 /* Function to send message to other device */
 int send_to(device dev, char *message)
 {
     // Check if the device is still connected
-    if (dev.fd == -1)
+    if (dev.fd < 0)
     {
         printf("This device has just been terminated\n");
         return 0;
     }
     // Send message to device via socket
-    if(write(dev.fd, message, strlen(message)) < 0)
+    if(write(dev.fd, message, strlen(message) + 1) < 0)
     {
         printf("ERROR: Can not send message\n");
         return 0;
@@ -128,10 +148,11 @@ void *Accept_handler(void *args)
         device_connect_from[total_device_from].fd = client_fd;
         device_connect_from[total_device_from].id = total_device_from;
         device_connect_from[total_device_from].addr = cli_addr;
+
         device_connect_from[total_device_from].port_num = ntohs(cli_addr.sin_port);
         inet_ntop(AF_INET, &cli_addr.sin_addr.s_addr, device_connect_from[total_device_from].my_ip, 50);
 
-        printf("New connection from IP: %s, Port: %d\n", device_connect_from[total_device_from].my_ip, device_connect_from[total_device_from].port_num);
+        printf("\nNew connection from IP: %s, Port: %d\n", device_connect_from[total_device_from].my_ip, device_connect_from[total_device_from].port_num);
 
         // Create a thread to receive messages from newly connected devices
         if(pthread_create(&Receive_thr_id, NULL, &Receive_handler, &device_connect_from[total_device_from]))
@@ -152,15 +173,24 @@ void *Receive_handler(void *args)
     while (1)
     {
         // Read data from device via socket
-        if (read(rev_thr->fd, buff_rev, sizeof(buff_rev)) < 0)
-        {
-            printf("Can not read data\n");
-            return 0;
+        ssize_t bytes_read = read(rev_thr->fd, buff_rev, sizeof(buff_rev) - 1);  // Limit buffer to size - 1
+        if (bytes_read < 0) {
+            printf("ERROR: Can not read data\n");
+            return NULL;
         }
+
+        // Ensure null-terminated string
+        buff_rev[bytes_read] = '\0';
 
         if(rev_thr->fd >= 0)
         {
-            printf("Message from %s: %s\n", rev_thr->my_ip, buff_rev);
+            printf("***Message receive from: %s\n", rev_thr->my_ip);  // Sender's IP
+            printf("***Sender Port:          %d\n", rev_thr->port_num); // Sender's Port
+            printf("***Message:              %s\n", buff_rev); // content message
+        }
+        else
+        {
+            printf("Notification: %s\n", buff_rev); // Connection error message
         }
     }
 }

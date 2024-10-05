@@ -19,6 +19,7 @@ void print_myPort();
 void print_list_peer();
 void print_list_command();
 void print_help();
+void print_myIP(char *ip_add);
 
 int connect_to(device dev);
 int send_to(device dev, char *message);
