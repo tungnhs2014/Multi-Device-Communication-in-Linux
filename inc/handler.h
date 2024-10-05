@@ -22,6 +22,7 @@ void print_help();
 
 int connect_to(device dev);
 int send_to(device dev, char *message);
+void terminate_id(device *dev);
 
 void *Accept_handler(void *args);
 void *Receive_handler(void *args);

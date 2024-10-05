@@ -129,16 +129,34 @@ int main(int argc, char const *argv[])
                 }
 
             case 7: // terminate
-                break;
-
+                {
+                    int ID_temp;
+                    // Get the ID of the device to disconnect
+                    sscanf(command, "%*s %d", &ID_temp);
+                    
+                    for (int i = 0; i < total_device_to; i++)
+                    {
+                        if(ID_temp == device_connect_to[i].id)
+                        {
+                            terminate_id(&device_connect_to[i]);
+                        }
+                    }
+                    break;
+                }
+               
             case 8: // exit
                 {
+                    // Disconnect from all devices
+                    for (int i = 0; i < total_device_to; i++)
+                    {
+                        terminate_id(&device_connect_to[i]);
+                    }
                     printf("**************************************************************************\n");
                     printf("-----------------------ENDING PROGRAM-------------------------------------\n");
                     printf("**************************************************************************\n");
+                    break;
                 }
-                break;
-
+              
             default:
                 printf("INVALID command.\n");
                 break;

@@ -164,3 +164,13 @@ void *Receive_handler(void *args)
         }
     }
 }
+
+/* Function to disconnect from device by ID */
+void terminate_id(device *dev)
+{
+    char str[100];
+    // Notify other devices that the connection has been dropped
+    sprintf(str, "The connection at port %d has just been terminated\n", dev->port_num);
+    send_to(*dev, str);
+    dev->fd = -1;  // Set file descriptor to -1 to annouce disconnection
+}
