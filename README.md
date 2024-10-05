@@ -36,3 +36,7 @@
 - `make shared`: Build object files with shared library
 - `make clean`: Clean files lib, obj, bin
 - `run`: ./bin/multi_device port_no (Ex: ./bin/multi_device 8080)
+
+## Demo Video
+You can watch the demo project here:
+[Demo: Linux Multi-Device Chat App Using Stream Socket](https://youtu.be/4W_U2S8CqZ4)
