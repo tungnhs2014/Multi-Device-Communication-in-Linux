@@ -1,13 +1,32 @@
+# Compiler and flags
 CC = gcc
-CFLAGS = -Wall -pthread
-TARGET:= multi_device
+CFLAGS = -Wall -pthread -Iinc  # -Iinc để chỉ định thư mục chứa header files
 
-# File source
-SRC:= main.c
+# Directories
+BIN_DIR = bin
+OBJ_DIR = obj
+SRC_DIR = src
+INC_DIR = inc
 
-# Build
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+# Output executable name
+TARGET = $(BIN_DIR)/multi_device
+
+# Source files
+SRC = main.c $(SRC_DIR)/handler.c
+
+# Object files
+OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/handler.o
+
+# Default rule to build the executable
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
+
+# Compile .c files into .o files
+$(OBJ_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Run server
 run: $(TARGET)
@@ -17,8 +36,9 @@ run: $(TARGET)
 run_client: $(TARGET)
 	./$(TARGET) 9090
 
-# clean oject
+# Clean object files and executable
 clean:
-	rm -f $(TARGET)
+	rm -f $(OBJ) $(TARGET)
 
-.PHONY:= run run_client clean
+# Phony targets
+.PHONY: run run_client clean
