@@ -12,8 +12,53 @@ extern pthread_t Receive_thr_id;
 /* SIGINT signal handler function to quickly shut down the program */
 void sig_handler()
 {
-    printf("Program terminated!\n");
+    printf("***********************************************************\n");
+    printf("-----------------Program terminated!-----------------------\n");
+    printf("***********************************************************\n");
     exit(EXIT_SUCCESS);
+}
+// Function to map command line commands to numeric values
+int get_command_code(char *command) {
+    if (!strcmp(command, "help")) return 1;
+    if (!strcmp(command, "myip")) return 2;
+    if (!strcmp(command, "myport")) return 3;
+    if (!strcmp(command, "connect")) return 4;
+    if (!strcmp(command, "list")) return 5;
+    if (!strcmp(command, "send")) return 6;
+    if (!strcmp(command, "terminate")) return 7;
+    if (!strcmp(command, "exit")) return 8;
+
+    return -1; // invalid command
+
+}
+/* Function to display list of commands */
+void print_list_command()
+{
+    printf("************************Command List*************************\n");
+    printf("help                         : Display all command\n");
+    printf("myip                         : Display IP of this device\n");
+    printf("myport                       : Display port of this device\n");
+    printf("connect <ip> <port_num>:     : Connect to device with IP and port at port num\n");
+    printf("list                         : Display all device connect\n");
+    printf("send <id> <message>          : send message to device with id connect id \n");
+    printf("terminate <id>               : Disconnect with device at id connect id\n");
+    printf("exit                         : close application\n");
+    printf("************************************************************\n");
+}
+
+/* Function to display list of commands */
+void print_help()
+{
+    printf("************************Command List*************************\n");
+    printf("help                         : Display all command\n");
+    printf("myip                         : Display IP of this device\n");
+    printf("myport                       : Display port of this device\n");
+    printf("connect <ip> <port_num>:     : Connect to device with IP and port at port num\n");
+    printf("list                         : Display all device connect\n");
+    printf("send <id> <message>          : send message to device with id connect id \n");
+    printf("terminate <id>               : Disconnect with device at id connect id\n");
+    printf("exit                         : close application\n");
+    printf("************************************************************\n");
 }
 
 /* Function to display the port number of the current device */
@@ -25,7 +70,9 @@ void print_myPort()
 /* Function to display list of connected devices */
 void print_list_peer() 
 {
-    printf("Connected device: \n");
+    printf("Device connection to*********************\n");
+    printf("ID |        IP Address         | Port No.\n");
+
     for(int i = 0; i < MAX_CLIENTS; i++)
     {
         if(device_connect_to[i].fd > 0)
@@ -33,6 +80,7 @@ void print_list_peer()
             printf("ID: %d | IP: %s | Port: %d\n", device_connect_to[i].id, device_connect_to[i].my_ip, device_connect_to[i].port_num);
         }
     }
+    printf("*****************************************\n");
 }
 
 /* Function to connect to other devices */
@@ -72,12 +120,14 @@ void *Accept_handler(void *args)
         client_fd = accept(this_device.fd, (struct sockaddr *)&cli_addr, &len);
         if(client_fd == -1)
         {
-            printf("Accept failed.\n");
+            printf("Accept new device failed.\n");
             return 0;
         }
 
         // Save newly connected device information to array
         device_connect_from[total_device_from].fd = client_fd;
+        device_connect_from[total_device_from].id = total_device_from;
+        device_connect_from[total_device_from].addr = cli_addr;
         device_connect_from[total_device_from].port_num = ntohs(cli_addr.sin_port);
         inet_ntop(AF_INET, &cli_addr.sin_addr.s_addr, device_connect_from[total_device_from].my_ip, 50);
 

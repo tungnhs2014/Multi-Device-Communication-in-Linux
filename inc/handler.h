@@ -14,8 +14,12 @@
 
 // Declare functions needed for the program
 void sig_handler();
+int get_command_code(char *command);
 void print_myPort();
 void print_list_peer();
+void print_list_command();
+void print_help();
+
 int connect_to(device dev);
 int send_to(device dev, char *message);
 
