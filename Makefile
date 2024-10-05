@@ -1,20 +1,20 @@
 # Compiler and flags
-CC := gcc
-CFLAGS := -Wall -pthread -Iinc
-PIC_FLAG := -fPIC
+CC = gcc
+CFLAGS = -Wall -pthread -Iinc
+PIC_FLAG = -fPIC
 
 # Directories
-OBJ_DIR := obj
-SRC_DIR := src
-LIB_DIR := lib
-BIN_DIR := bin
+OBJ_DIR = obj
+SRC_DIR = src
+LIB_DIR = lib
+BIN_DIR = bin
 
 # Output executable name
-TARGET := $(BIN_DIR)/multi_device
+TARGET = $(BIN_DIR)/multi_device
 
 # Automatically detect all .c files
-SRC := main.c $(wildcard $(SRC_DIR)/*.c)
-OBJ := $(patsubst %.c,$(OBJ_DIR)/%.o,$(notdir $(SRC)))
+SRC = main.c $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/handler.o
 
 # Libraries
 STATIC_LIB = $(LIB_DIR)/static/libhandler.a
@@ -28,7 +28,10 @@ shared: $(OBJ) $(SHARED_LIB)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) -L$(LIB_DIR)/shared -lhandler
 
 # Compile .c to .o files with Position Independent Code for shared library
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJ_DIR)/main.o: main.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(PIC_FLAG) -c $< -o $@
+
+$(OBJ_DIR)/handler.o: $(SRC_DIR)/handler.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(PIC_FLAG) -c $< -o $@
 
 # Create static library
