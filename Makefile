@@ -35,11 +35,11 @@ $(OBJ_DIR)/handler.o: $(SRC_DIR)/handler.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(PIC_FLAG) -c $< -o $@
 
 # Create static library
-$(STATIC_LIB): $(OBJ)
+$(STATIC_LIB): $(OBJ) | $(LIB_DIR)/static
 	ar rcs $(STATIC_LIB) $(OBJ)
 
 # Create shared library
-$(SHARED_LIB): $(OBJ)
+$(SHARED_LIB): $(OBJ) | $(LIB_DIR)/shared
 	$(CC) -shared -o $(SHARED_LIB) $(OBJ)
 
 # Link static executable
