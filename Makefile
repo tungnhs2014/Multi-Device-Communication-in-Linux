@@ -3,7 +3,7 @@ CFLAGS = -Wall -pthread
 TARGET:= multi_device
 
 # File source
-SRC:= multi_device.c
+SRC:= main.c
 
 # Build
 $(TARGET): $(SRC)

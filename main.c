@@ -33,6 +33,11 @@ char command_option[10];   // String to store command line option
 
 // Function prototype
 void sig_handler();
+void print_myPort();
+void print_list_peer();
+int connect_to(device dev);
+int send_to(device dev, char *message);
+
 static void *Accept_handler(void *args);
 static void *Receive_handler(void *args);
 
@@ -88,6 +93,65 @@ int main(int argc, char const *argv[])
         fgets(command, sizeof(command), stdin); // Get command from the user
         sscanf(command, "%s", command_option);  // Extract commands and options from input string
 
+        /* Display the port number of the current device */
+        if(!strcmp(command_option, "myport"))
+        {
+            print_myPort();
+        }
+
+        /* Display list of connected devices */
+        else if(!strcmp(command_option, "list"))
+        {
+            print_list_peer();
+        }
+        
+        else if(!strcmp(command_option, "connect"))
+        {
+            char IP_d[20];
+            int port_n;
+            sscanf(command, "%*s %s %d", IP_d, &port_n);
+            
+            // Set up information for the device to connect
+            device_connect_to[total_device_to].fd = socket(AF_INET, SOCK_STREAM, 0);
+            device_connect_to[total_device_to].port_num = port_n;
+            strcpy(device_connect_to[total_device_to].my_ip, IP_d);
+            device_connect_to[total_device_to].addr.sin_family = AF_INET;
+            device_connect_to[total_device_to].addr.sin_port = htons(port_n);
+            inet_pton(AF_INET, IP_d, &device_connect_to[total_device_to].addr.sin_addr.s_addr);
+
+            if(connect_to(device_connect_to[total_device_to]) == 0)
+            {
+                printf("Connected to IP: %s, Port %d\n", IP_d, port_n);
+                total_device_to++;
+            }
+            else
+            {
+                printf("Connection failed.\n");
+            }
+        }
+
+        // Process the message sending command
+        else if(!strcmp(command_option, "send"))
+        {
+            char message[100];
+            sscanf(command, "%*s %[^\n]", message);
+            if (total_device_to > 0)
+            {
+                send_to(device_connect_to[0], message);
+            }
+        }
+        
+        // Command to exit the program
+        else if(!strcmp(command_option, "exit"))
+        {
+            printf("Exiting program....\n");
+            break;
+        }
+        else
+        {
+            printf("Unknown command.\n");
+        }
+
     }
 
     return 0;
@@ -98,6 +162,49 @@ void sig_handler()
 {
     printf("Program terminated!\n");
     exit(EXIT_SUCCESS);
+}
+
+/* Function to display the port number of the current device */
+void print_myPort() 
+{
+    printf("My port is: %d\n", this_device.port_num);
+}
+
+/* Function to display list of connected devices */
+void print_list_peer() 
+{
+    printf("Connected device: \n");
+    for(int i = 0; i < MAX_CLIENTS; i++)
+    {
+        if(device_connect_to[i].fd > 0)
+        {
+            printf("ID: %d | IP: %s | Port: %d\n", device_connect_to[i].id, device_connect_to[i].my_ip, device_connect_to[i].port_num);
+        }
+    }
+}
+
+/* Function to connect to other devices */
+int connect_to(device dev)
+{
+    return connect(dev.fd, (struct sockaddr*)&dev.addr, sizeof(dev.addr));
+}
+
+/* Function to send message to other device */
+int send_to(device dev, char *message)
+{
+    // Check if the device is still connected
+    if (dev.fd == -1)
+    {
+        printf("This device has just been terminated\n");
+        return 0;
+    }
+    // Send message to device via socket
+    if(write(dev.fd, message, strlen(message)) < 0)
+    {
+        printf("ERROR: Can not send message\n");
+        return 0;
+    }
+    return 1;
 }
 
 /* Function to accept connection from other device */
