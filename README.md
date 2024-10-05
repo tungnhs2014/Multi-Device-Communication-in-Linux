@@ -1,7 +1,7 @@
 ## Author: Nguyen Huu Son Tung
 
 ## Project
-"Project for designing a communication chat application between multiple devices on Linux, applying IPC Socket (TCP) and multi-threading. Users can interact with the system using various commands with different features."
+Project for designing a communication chat application between multiple devices on Linux, applying IPC Socket (TCP) and multi-threading. Users can interact with the system using various commands with different features.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/fce01e13-3154-4181-a4a2-f40e86850d13" alt="Alt text" width="800" height="300">
