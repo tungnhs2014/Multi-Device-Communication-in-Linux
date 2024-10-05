@@ -20,11 +20,8 @@ OBJ = $(OBJ_DIR)/main.o $(OBJ_DIR)/handler.o
 STATIC_LIB = $(LIB_DIR)/static/libhandler.a
 SHARED_LIB = $(LIB_DIR)/shared/libhandler.so
 
-# Build the executable using static library
-static: $(TARGET)
-
 # Build the executable using shared library
-shared: $(OBJ) $(SHARED_LIB)
+shared: $(OBJ) $(SHARED_LIB) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) -L$(LIB_DIR)/shared -lhandler
 
 # Compile .c to .o files with Position Independent Code for shared library
@@ -43,7 +40,7 @@ $(SHARED_LIB): $(OBJ) | $(LIB_DIR)/shared
 	$(CC) -shared -o $(SHARED_LIB) $(OBJ)
 
 # Link static executable
-$(TARGET): $(OBJ) $(STATIC_LIB) | $(BIN_DIR)
+static: $(OBJ) $(STATIC_LIB) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(STATIC_LIB)
 
 # Create directories if they don't exist
